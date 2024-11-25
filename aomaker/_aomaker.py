@@ -1,5 +1,4 @@
 # --coding:utf-8--
-import json
 import os
 import importlib
 from typing import List, Dict, Callable, Text, Tuple, Union
@@ -19,17 +18,17 @@ from aomaker.hook_manager import cli_hook, session_hook
 from aomaker.models import ExecuteAsyncJobCondition
 
 
-def dependence(dependent_api: Callable or str, var_name: Text, imp_module=None, *out_args, **out_kwargs):
+def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: str = "", require_param: bool = False,
+               *out_args):
     """
     接口依赖调用装饰器，
     会在目标接口调用前，先去调用其前置依赖接口，然后存储依赖接口的完整响应结果到cache表中，key为var_name
     若var_name已存在，将不会再调用该依赖接口
-
+    依赖接口参数在依赖执行完成后将会被屏蔽
     :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类名.方法名
     :param var_name: 依赖的参数名
-    :param imp_module: 若依赖接口是同一个类下的方法，需要导入模块
-    :param out_args: 依赖接口需要的参数
-    :param out_kwargs: 依赖接口需要的参数
+    :param require_param: 请求是否需要参数传入
+    :param jsonpath_expr: 用于提取所需数据的jsonpath
     :return:
     """
 
@@ -37,17 +36,40 @@ def dependence(dependent_api: Callable or str, var_name: Text, imp_module=None, 
         @wraps(func)
         def wrapper(*args, **kwargs):
             api_name = func.__name__
+            imp_module = func.__module__
+            try:
+                dependent_param = kwargs['dependence'][var_name] if require_param else dict()
+            except KeyError:
+                logger.info(f"==========<{api_name}>前置依赖{var_name}方法未传入依赖参数跳过执行==========")
+                r = func(*args, **kwargs)
+                return r
             if not cache.get(var_name):
-                dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module=imp_module,
-                                                                   *out_args, **out_kwargs)
+                dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module,
+                                                                   *out_args, **dependent_param)
                 depend_api_name = depend_api_info.get("name")
                 cache.set(var_name, dependence_res, api_info=depend_api_info)
-
                 logger.info(f"==========存储全局变量{var_name}完成==========")
                 logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>结束==========")
+                tmp_dependence_res = dependence_res
             else:
                 logger.info(
                     f"==========<{api_name}>前置依赖已被调用过，本次不再调用,依赖参数{var_name}直接从cache表中读取==========")
+                tmp_dependence_res = cache.get(var_name)
+            if jsonpath_expr:
+                if ':' in jsonpath_expr:
+                    json_path, index = jsonpath_expr.split(':')
+                else:
+                    index = 0
+                extract_var = jsonpath(tmp_dependence_res, jsonpath_expr)
+                if extract_var is False:
+                    raise JsonPathExtractFailed(tmp_dependence_res, jsonpath_expr)
+                kwargs[var_name] = extract_var[index]
+
+            if require_param:
+                if len(kwargs['dependence']) == 1:
+                    kwargs.pop('dependence')
+                else:
+                    kwargs['dependence'].pop(var_name)
             r = func(*args, **kwargs)
             return r
 
@@ -227,7 +249,7 @@ def _call_dependence(dependent_api: Callable or Text, api_name: Text, imp_module
         depend_api_name = eval(f"{class_}.{method_}.__name__")
         logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>执行==========")
         try:
-            res = eval(f'{class_}.{method_}(*{out_args},**{out_kwargs})')
+            res = eval(f'{class_}.{method_}(*{out_args}, **{out_kwargs})')
         except TypeError as te:
             logger.error(f"dependence参数传递错误，错误参数：{dependent_api}")
             raise te
@@ -316,6 +338,30 @@ def _is_execute_cycle_func(res, condition=None) -> bool:
     if res[0] == expected_value:
         return True
     return False
+
+def kwargs_handle(cls):
+    """
+    将传入的kwargs中用例层关键字屏蔽,确保最终传入ao层仅包含依赖参数和接口参数
+    依赖参数在依赖结束后由依赖装饰器屏蔽
+    :param cls:
+    :return:
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if kwargs:
+                for arg in ['case_name', 'assert']:
+                    try:
+                        kwargs.pop(arg)
+                    except KeyError:
+                        pass
+            return func(*args, **kwargs)
+        return wrapper
+
+    for attr_name, attr_value in cls.__dict__.items():
+        if callable(attr_value):
+            setattr(cls, attr_name, decorator(attr_value))
+    return cls
 
 
 if __name__ == '__main__':

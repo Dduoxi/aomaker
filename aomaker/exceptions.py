@@ -60,3 +60,16 @@ class JsonPathExtractFailed(AoMakerException):
 
     def __str__(self):
         return f'依赖数据提取失败\n 提取表达式：{self.jsonpath_expr}\n 数据源：{self.res}'
+
+
+class DependenceError(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class CaseError(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class ParamsException(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)
