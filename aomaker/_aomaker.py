@@ -132,7 +132,7 @@ def be_dependence(var_name: Text):
                 api_info = {
                     "name": api_name,
                     "module": _get_module_name_by_method_obj(func),
-                    "ao": type(func.__self__).__name__.lower()
+                    "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个非关键字参数始终为类实例
                 }
                 cache.set(var_name, res, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
