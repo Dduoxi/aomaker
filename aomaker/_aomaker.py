@@ -18,6 +18,43 @@ from aomaker.hook_manager import cli_hook, session_hook
 from aomaker.models import ExecuteAsyncJobCondition
 
 
+# def dependence(dependent_api: Callable or str, var_name: Text, imp_module=None, *out_args, **out_kwargs):
+#     """
+#     接口依赖调用装饰器，
+#     会在目标接口调用前，先去调用其前置依赖接口，然后存储依赖接口的完整响应结果到cache表中，key为var_name
+#     若var_name已存在，将不会再调用该依赖接口
+#
+#     :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类名.方法名
+#     :param var_name: 依赖的参数名
+#     :param imp_module: 若依赖接口是同一个类下的方法，需要导入模块
+#     :param out_args: 依赖接口需要的参数
+#     :param out_kwargs: 依赖接口需要的参数
+#     :return:
+#     """
+#
+#     def decorator(func):
+#         @wraps(func)
+#         def wrapper(*args, **kwargs):
+#             api_name = func.__name__
+#             if not cache.get(var_name):
+#                 dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module=imp_module,
+#                                                                    *out_args, **out_kwargs)
+#                 depend_api_name = depend_api_info.get("name")
+#                 cache.set(var_name, dependence_res, api_info=depend_api_info)
+#
+#                 logger.info(f"==========存储全局变量{var_name}完成==========")
+#                 logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>结束==========")
+#             else:
+#                 logger.info(
+#                     f"==========<{api_name}>前置依赖已被调用过，本次不再调用,依赖参数{var_name}直接从cache表中读取==========")
+#             r = func(*args, **kwargs)
+#             return r
+#
+#         return wrapper
+#
+#     return decorator
+
+
 def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: str = "", require_param: bool = False,
                *out_args):
     """
@@ -25,10 +62,10 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
     会在目标接口调用前，先去调用其前置依赖接口，然后存储依赖接口的完整响应结果到cache表中，key为var_name
     若var_name已存在，将不会再调用该依赖接口
     依赖接口参数在依赖执行完成后将会被屏蔽
-    :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类名.方法名
+    :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类下实例化的对象.方法名
     :param var_name: 依赖的参数名
     :param require_param: 请求是否需要参数传入
-    :param jsonpath_expr: 用于提取所需数据的jsonpath
+    :param jsonpath_expr: 用于提取所需数据的jsonpath,传入后会将提取结果以var_name为key存储进请求参数中
     :return:
     """
 
@@ -72,6 +109,36 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
                     kwargs['dependence'].pop(var_name)
             r = func(*args, **kwargs)
             return r
+
+        return wrapper
+
+    return decorator
+
+
+def be_dependence(var_name: Text):
+    """
+    表示此接口被其他接口所依赖，会将其响应结果存储，key为var_name
+    :param var_name:存储响应结果使用的key
+    :return:
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            res = func(*args, **kwargs)
+            api_name = func.__name__
+            if not cache.get(var_name):
+                logger.info(f"==========<{api_name}>被指定为依赖接口,将响应结果存储为全局变量==========")
+                api_info = {
+                    "name": api_name,
+                    "module": _get_module_name_by_method_obj(func),
+                    "ao": type(func.__self__).__name__.lower()
+                }
+                cache.set(var_name, res, api_info=api_info)
+                logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
+            else:
+                logger.info(f"==========<{api_name}>已被调用过，结果已存储,依赖参数{var_name}直接从cache表中读取==========")
+            return res
 
         return wrapper
 
@@ -339,6 +406,7 @@ def _is_execute_cycle_func(res, condition=None) -> bool:
         return True
     return False
 
+
 def kwargs_handle(cls):
     """
     将传入的kwargs中用例层关键字屏蔽,确保最终传入ao层仅包含依赖参数和接口参数
@@ -346,6 +414,7 @@ def kwargs_handle(cls):
     :param cls:
     :return:
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -356,6 +425,7 @@ def kwargs_handle(cls):
                     except KeyError:
                         pass
             return func(*args, **kwargs)
+
         return wrapper
 
     for attr_name, attr_value in cls.__dict__.items():
