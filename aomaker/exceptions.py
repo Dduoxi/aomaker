@@ -65,3 +65,11 @@ class JsonPathExtractFailed(AoMakerException):
 class DependenceError(AoMakerException):
     def __init__(self, *args):
         super().__init__(*args)
+
+class CaseError(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class ParamsException(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)
