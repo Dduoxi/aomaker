@@ -117,7 +117,7 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
 
 def be_dependence(var_name: Text):
     """
-    表示此接口被其他接口所依赖，会将其响应结果存储，key为var_name
+    标明此接口被其他接口所依赖，会将其响应结果存储，key为var_name
     :param var_name:存储响应结果使用的key
     :return:
     """
