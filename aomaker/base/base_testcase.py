@@ -137,7 +137,11 @@ class BaseTestcase:
             raise e
 
     def func_assert(self, assert_info: list[dict], resp: Any = None, **others):
-        funcs = [expected.keys() for expected in assert_info]
+        funcs = []
+        for expected in assert_info:
+            tmp = expected.keys()
+            for t in tmp:
+                funcs.append(t)
         if any(item in funcs for item in ['eq', 'neq', 'gt', 'ge', 'lt', 'le']) and not hasattr(resp, '__getitem__'):
             raise CaseError(f'此类型断言传入的resp无法使用: funcs: {funcs}, resp: {resp}')
         assert_func = {
