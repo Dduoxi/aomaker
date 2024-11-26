@@ -85,7 +85,7 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
                 dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module,
                                                                    *out_args, **dependent_param)
                 depend_api_name = depend_api_info.get("name")
-                cache.set(var_name, dependence_res, api_info=depend_api_info)
+                # cache.set(var_name, dependence_res, api_info=depend_api_info)  # 存储由依赖接口自身完成
                 logger.info(f"==========存储全局变量{var_name}完成==========")
                 logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>结束==========")
                 tmp_dependence_res = dependence_res
@@ -141,7 +141,7 @@ def be_dependence(var_name: Text):
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
-                    f"==========<{api_name}>已被调用过，结果已存储,使用参数{var_name}将直接从cache表中读取==========")
+                    f"==========<{api_name}>已被调用，结果已存储,使用参数{var_name}将直接从cache表中读取==========")
             return res
 
         return wrapper
