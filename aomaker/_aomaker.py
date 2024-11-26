@@ -55,6 +55,16 @@ from aomaker.models import ExecuteAsyncJobCondition
 #
 #     return decorator
 
+def get_value_by_jsonpath(jsonpath_expr, datasource):
+    if ':' in jsonpath_expr:
+        json_path, index = jsonpath_expr.split(':')
+    else:
+        index = 0
+    extract_var = jsonpath(datasource, jsonpath_expr)
+    if extract_var is False:
+        raise JsonPathExtractFailed(datasource, jsonpath_expr)
+    return extract_var[index]
+
 
 def dependence(dependent_api: Callable or str, var_name: Text, require_param: bool = False,
                *out_args):
@@ -96,11 +106,12 @@ def dependence(dependent_api: Callable or str, var_name: Text, require_param: bo
     return decorator
 
 
-def be_dependence(var_name: Text, jsonpath_expr: str = ""):
+def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None):
     """
     标明此接口被其他接口所依赖，会将其响应结果存储，key为var_name
     :param var_name:存储响应结果使用的key
     :param jsonpath_expr: jsonpath用于查找响应结果的某字段,未传入则存储整段响应
+    :param condition: 通过`:`分割后用jsonpath查找到的结果判断是否此条件，为True时才会存入cache表，未传入默认均存入
     :return:
     """
 
@@ -108,23 +119,22 @@ def be_dependence(var_name: Text, jsonpath_expr: str = ""):
         @wraps(func)
         def wrapper(*args, **kwargs):
             res = func(*args, **kwargs)
+            if condition:
+                condition_j, condition_e = condition.split('::')
+                condition_j = get_value_by_jsonpath(condition_j, res)
+                condition_res = eval(f'{condition_e.format(condition_j)}')
+                if not condition_res:
+                    return res
             api_name = func.__name__
             if not cache.get(var_name):
                 logger.info(f"==========<{api_name}>被指定为依赖接口,将响应结果存储为全局变量==========")
                 api_info = {
                     "name": api_name,
                     "module": _get_module_name_by_method_obj(func),
-                    "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个非关键字参数始终为类实例
+                    "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个位置参数始终为类实例
                 }
                 if jsonpath_expr:
-                    if ':' in jsonpath_expr:
-                        json_path, index = jsonpath_expr.split(':')
-                    else:
-                        index = 0
-                    extract_var = jsonpath(res, jsonpath_expr)
-                    if extract_var is False:
-                        raise JsonPathExtractFailed(res, jsonpath_expr)
-                    cache.set(var_name, extract_var[index], api_info=api_info)
+                    cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, res), api_info=api_info)
                 else:
                     cache.set(var_name, res, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
