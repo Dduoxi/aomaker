@@ -5,6 +5,7 @@ from typing import List, Dict, Callable, Text, Tuple, Union
 from functools import wraps
 from dataclasses import dataclass as dc, field
 
+import pytest
 import yaml
 import click
 from jsonpath import jsonpath
@@ -137,7 +138,8 @@ def be_dependence(var_name: Text):
                 cache.set(var_name, res, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
-                logger.info(f"==========<{api_name}>已被调用过，结果已存储,依赖参数{var_name}直接从cache表中读取==========")
+                logger.info(
+                    f"==========<{api_name}>已被调用过，结果已存储,使用参数{var_name}将直接从cache表中读取==========")
             return res
 
         return wrapper
@@ -432,6 +434,29 @@ def kwargs_handle(cls):
         if callable(attr_value):
             setattr(cls, attr_name, decorator(attr_value))
     return cls
+
+
+def case_handle(yaml_path: Text, class_name: Text, method_name: Text):
+    def decorator(func):
+        data = data_maker(yaml_path, class_name, method_name)
+        handle_data = list()
+        for d in data:
+            try:
+                _ = [d.pop(key) for key in ['case_name', 'assert']]
+            except KeyError:
+                pass
+            if not getattr(d, 'data'):
+                d['data'] = {}
+            if not getattr(d, 'dependence'):
+                d['dependence'] = {}
+            handle_data.append((d['case_name'], d['data'], d['dependence'], d['assert']))
+
+        @wraps(func)
+        @pytest.mark.parametrize(f'case_name, data, dependence, assert', data)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 if __name__ == '__main__':
