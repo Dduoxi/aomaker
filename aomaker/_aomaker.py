@@ -441,10 +441,6 @@ def case_handle(yaml_path: Text, class_name: Text, method_name: Text):
         data = data_maker(yaml_path, class_name, method_name)
         handle_data = list()
         for d in data:
-            try:
-                _ = [d.pop(key) for key in ['case_name', 'assert']]
-            except KeyError:
-                pass
             if not d.get('data'):
                 d['data'] = {}
             if not d.get('dependence'):
