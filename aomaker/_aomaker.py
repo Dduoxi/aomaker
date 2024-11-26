@@ -411,11 +411,10 @@ def kwargs_handle(cls):
         @wraps(func)
         def wrapper(*args, **kwargs):
             if kwargs:
-                for arg in ['case_name', 'assert']:
-                    try:
-                        kwargs.pop(arg)
-                    except KeyError:
-                        pass
+                if not kwargs.get('body'):
+                    kwargs['body'] = {}
+                if not kwargs.get('data'):
+                    kwargs['data'] = {}
             return func(*args, **kwargs)
 
         return wrapper
