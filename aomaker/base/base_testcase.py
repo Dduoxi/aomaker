@@ -152,31 +152,31 @@ class BaseTestcase:
             'condition': eval
         }
         for expected in assert_info:
-            key, info = expected.items()
-            msg = info[-1] if len(info) == 3 else ""
-            if (key in ['in', 'nin'] or (key == 'condition' and '{' in info[0])) and not others:
-                raise CaseError(f'此类型断言时需传入值替换占位符: {key}')
-            match key:
-                case 'eq' | 'neq' | 'gt' | 'ge' | 'lt' | 'le':
-                    actual_value = jsonpath(resp, info[0])[0]
-                    assert_func[key](actual_value, info[1], msg)
-                case 'in' | 'nin':
-                    try:
+            for key, info in expected.items():
+                msg = info[-1] if len(info) == 3 else ""
+                if (key in ['in', 'nin'] or (key == 'condition' and '{' in info[0])) and not others:
+                    raise CaseError(f'此类型断言时需传入值替换占位符: {key}')
+                match key:
+                    case 'eq' | 'neq' | 'gt' | 'ge' | 'lt' | 'le':
                         actual_value = jsonpath(resp, info[0])[0]
-                    except Exception as e:
-                        logger.info(f'无法解析为jsonpath: {info[0]}, err_msg: {e}')
+                        assert_func[key](actual_value, info[1], msg)
+                    case 'in' | 'nin':
                         try:
-                            actual_value = others[info[0]]
-                        except KeyError:
-                            raise CaseError(f'此类型断言下没有传入对应实际值: {key}')
-                    assert_func[key](actual_value, info[1], msg)
-                case 'condition':
-                    try:
-                        actual_value = assert_func[key](info[0].format(**others))
-                    except Exception as e:
-                        raise CaseError(f'语句执行失败: {e}')
-                    if not isinstance(actual_value, bool):
-                        raise CaseError(f'此类型下执行的语句需要为条件语句: {info[0].format(**others)}')
-                    assert actual_value == info[1], msg
-                case _:
-                    raise CaseError(f'无效类型断言: {key}')
+                            actual_value = jsonpath(resp, info[0])[0]
+                        except Exception as e:
+                            logger.info(f'无法解析为jsonpath: {info[0]}, err_msg: {e}')
+                            try:
+                                actual_value = others[info[0]]
+                            except KeyError:
+                                raise CaseError(f'此类型断言下没有传入对应实际值: {key}')
+                        assert_func[key](actual_value, info[1], msg)
+                    case 'condition':
+                        try:
+                            actual_value = assert_func[key](info[0].format(**others))
+                        except Exception as e:
+                            raise CaseError(f'语句执行失败: {e}')
+                        if not isinstance(actual_value, bool):
+                            raise CaseError(f'此类型下执行的语句需要为条件语句: {info[0].format(**others)}')
+                        assert actual_value == info[1], msg
+                    case _:
+                        raise CaseError(f'无效类型断言: {key}')
