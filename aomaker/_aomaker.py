@@ -5,7 +5,6 @@ from typing import List, Dict, Callable, Text, Tuple, Union
 from functools import wraps
 from dataclasses import dataclass as dc, field
 
-import pytest
 import yaml
 import click
 from jsonpath import jsonpath
@@ -66,15 +65,15 @@ def get_value_by_jsonpath(jsonpath_expr, datasource):
     return extract_var[index]
 
 
-def dependence(dependent_api: Callable or str, var_name: Text, require_param: bool = False,
-               *out_args):
+def dependence(dependent_api: Callable or str, var_name: Text, require: bool = False, refresh: bool = False, *out_args):
     """
     接口依赖调用装饰器，
     会在目标接口调用前，先去调用其前置依赖接口，然后存储依赖接口的完整响应结果到cache表中，key为var_name
     若var_name已存在，将不会再调用该依赖接口
     :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类下实例化的对象.方法名
     :param var_name: 依赖的参数名
-    :param require_param: 请求是否需要参数传入
+    :param require: 请求是否需要参数传入
+    :param refresh: 此依赖是否每次请求都需要刷新，默认为否
     :return:
     """
 
@@ -84,12 +83,12 @@ def dependence(dependent_api: Callable or str, var_name: Text, require_param: bo
             api_name = func.__name__
             imp_module = func.__module__
             try:
-                dependent_param = kwargs['dependence'][var_name] if require_param else dict()
+                dependent_param = kwargs['dependence'][var_name] if require else dict()
             except KeyError:
                 logger.info(f"==========<{api_name}>前置依赖{var_name}方法未传入依赖参数跳过执行==========")
                 r = func(*args, **kwargs)
                 return r
-            if not cache.get(var_name):
+            if not cache.get(var_name) or refresh:
                 dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module,
                                                                    *out_args, **dependent_param)
                 depend_api_name = depend_api_info.get("name")
@@ -119,14 +118,11 @@ def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None
         @wraps(func)
         def wrapper(*args, **kwargs):
             res = func(*args, **kwargs)
-            if condition:
-                condition_j, condition_e = condition.split('::')
-                condition_j = get_value_by_jsonpath(condition_j, res)
-                condition_res = eval(f'{condition_e.format(condition_j)}')
-                if not condition_res:
-                    return res
+            condition_j, condition_e = condition.split('::')
+            condition_j = get_value_by_jsonpath(condition_j, res)
+            condition_res = eval(f'{condition_e.format(condition_j)}')
             api_name = func.__name__
-            if not cache.get(var_name):
+            if condition_res:
                 logger.info(f"==========<{api_name}>被指定为依赖接口,将响应结果存储为全局变量==========")
                 api_info = {
                     "name": api_name,
@@ -140,7 +136,7 @@ def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
-                    f"==========<{api_name}>已被调用，结果已存储,使用参数{var_name}将直接从cache表中读取==========")
+                    f"==========<{api_name}>已被调用，但响应结果不满足传入条件,不对{var_name}进行存储==========")
             return res
 
         return wrapper
@@ -411,13 +407,6 @@ def _is_execute_cycle_func(res, condition=None) -> bool:
 
 
 def kwargs_handle(cls):
-    """
-    将传入的kwargs中用例层关键字屏蔽,确保最终传入ao层仅包含依赖参数和接口参数
-    依赖参数在依赖结束后由依赖装饰器屏蔽
-    :param cls:
-    :return:
-    """
-
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -436,25 +425,6 @@ def kwargs_handle(cls):
         if callable(attr_value):
             setattr(cls, attr_name, decorator(attr_value))
     return cls
-
-
-def case_handle(yaml_path: Text, class_name: Text, method_name: Text):
-    def decorator(func):
-        data = data_maker(yaml_path, class_name, method_name)
-        handle_data = list()
-        for d in data:
-            if not d.get('data'):
-                d['data'] = {}
-            if not d.get('dependence'):
-                d['dependence'] = {}
-            handle_data.append((d['case_name'], d['data'], d['dependence'], d['assert']))
-
-        @wraps(func)
-        @pytest.mark.parametrize(f'case_name, data, dependence, assert', data)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
 
 
 if __name__ == '__main__':
