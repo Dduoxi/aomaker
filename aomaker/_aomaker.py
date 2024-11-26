@@ -101,7 +101,9 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
                 extract_var = jsonpath(tmp_dependence_res, jsonpath_expr)
                 if extract_var is False:
                     raise JsonPathExtractFailed(tmp_dependence_res, jsonpath_expr)
-                kwargs[var_name] = extract_var[index]
+                if not kwargs.get('data'):
+                    kwargs['data'] = dict()
+                kwargs['data'][var_name] = extract_var[index]
 
             if require_param:
                 if len(kwargs['dependence']) == 1:
