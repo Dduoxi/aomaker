@@ -445,9 +445,9 @@ def case_handle(yaml_path: Text, class_name: Text, method_name: Text):
                 _ = [d.pop(key) for key in ['case_name', 'assert']]
             except KeyError:
                 pass
-            if not getattr(d, 'data'):
+            if not d.get('data'):
                 d['data'] = {}
-            if not getattr(d, 'dependence'):
+            if not d.get('dependence'):
                 d['dependence'] = {}
             handle_data.append((d['case_name'], d['data'], d['dependence'], d['assert']))
 
