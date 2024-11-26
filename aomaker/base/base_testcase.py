@@ -136,8 +136,8 @@ class BaseTestcase:
             logger.error(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
             raise e
 
-    def func_assert(self, expected: dict, resp: Any = None, **others):
-        funcs = expected.keys()
+    def func_assert(self, assert_info: list[dict], resp: Any = None, **others):
+        funcs = [expected.keys() for expected in assert_info]
         if any(item in funcs for item in ['eq', 'neq', 'gt', 'ge', 'lt', 'le']) and not hasattr(resp, '__getitem__'):
             raise CaseError(f'此类型断言传入的resp无法使用: funcs: {funcs}, resp: {resp}')
         assert_func = {
@@ -151,7 +151,8 @@ class BaseTestcase:
             'nin': self.assert_nin,
             'condition': eval
         }
-        for key, info in expected.items():
+        for expected in assert_info:
+            key, info = expected.items()
             msg = info[-1] if len(info) == 3 else ""
             if (key in ['in', 'nin'] or (key == 'condition' and '{' in info[0])) and not others:
                 raise CaseError(f'此类型断言时需传入值替换占位符: {key}')
