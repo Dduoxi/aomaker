@@ -105,7 +105,7 @@ def dependence(dependent_api: Callable or str, var_name: Text, require: bool = F
     return decorator
 
 
-def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None):
+def be_dependence(var_name: Text, condition: Union[Dict, bool], jsonpath_expr: str = ""):
     """
     标明此接口被其他接口所依赖，会将其响应结果存储，key为var_name
     :param var_name:存储响应结果使用的key
@@ -117,12 +117,10 @@ def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            res = func(*args, **kwargs)
-            condition_j, condition_e = condition.split('::')
-            condition_j = get_value_by_jsonpath(condition_j, res)
-            condition_res = eval(f'{condition_e.format(condition_j)}')
+            resp = func(*args, **kwargs)
+            is_execute = _is_execute_cycle_func(resp, condition=condition)
             api_name = func.__name__
-            if condition_res:
+            if is_execute:
                 logger.info(f"==========<{api_name}>被指定为依赖接口,将响应结果存储为全局变量==========")
                 api_info = {
                     "name": api_name,
@@ -130,14 +128,14 @@ def be_dependence(var_name: Text, jsonpath_expr: str = "", condition: str = None
                     "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个位置参数始终为类实例
                 }
                 if jsonpath_expr:
-                    cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, res), api_info=api_info)
+                    cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, resp), api_info=api_info)
                 else:
-                    cache.set(var_name, res, api_info=api_info)
+                    cache.set(var_name, resp, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
                     f"==========<{api_name}>已被调用，但响应结果不满足传入条件,不对{var_name}进行存储==========")
-            return res
+            return resp
 
         return wrapper
 
