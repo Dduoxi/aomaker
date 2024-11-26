@@ -118,10 +118,11 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
     return decorator
 
 
-def be_dependence(var_name: Text):
+def be_dependence(var_name: Text, jsonpath_expr: str = ""):
     """
     标明此接口被其他接口所依赖，会将其响应结果存储，key为var_name
     :param var_name:存储响应结果使用的key
+    :param jsonpath_expr: jsonpath用于查找响应结果的某字段,未传入则存储整段响应
     :return:
     """
 
@@ -137,6 +138,15 @@ def be_dependence(var_name: Text):
                     "module": _get_module_name_by_method_obj(func),
                     "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个非关键字参数始终为类实例
                 }
+                if jsonpath_expr:
+                    if ':' in jsonpath_expr:
+                        json_path, index = jsonpath_expr.split(':')
+                    else:
+                        index = 0
+                    extract_var = jsonpath(res, jsonpath_expr)
+                    if extract_var is False:
+                        raise JsonPathExtractFailed(res, jsonpath_expr)
+                    res = extract_var[index]
                 cache.set(var_name, res, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
