@@ -56,17 +56,15 @@ from aomaker.models import ExecuteAsyncJobCondition
 #     return decorator
 
 
-def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: str = "", require_param: bool = False,
+def dependence(dependent_api: Callable or str, var_name: Text, require_param: bool = False,
                *out_args):
     """
     接口依赖调用装饰器，
     会在目标接口调用前，先去调用其前置依赖接口，然后存储依赖接口的完整响应结果到cache表中，key为var_name
     若var_name已存在，将不会再调用该依赖接口
-    依赖接口参数在依赖执行完成后将会被屏蔽
     :param dependent_api: 接口依赖，直接传入接口对象；若依赖接口是同一个类下的方法，需要传入字符串：类下实例化的对象.方法名
     :param var_name: 依赖的参数名
     :param require_param: 请求是否需要参数传入
-    :param jsonpath_expr: 用于提取所需数据的jsonpath,传入后会将提取结果以var_name为key存储进请求参数中
     :return:
     """
 
@@ -85,31 +83,11 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
                 dependence_res, depend_api_info = _call_dependence(dependent_api, api_name, imp_module,
                                                                    *out_args, **dependent_param)
                 depend_api_name = depend_api_info.get("name")
-                # cache.set(var_name, dependence_res, api_info=depend_api_info)  # 存储由依赖接口自身完成
-                # logger.info(f"==========存储全局变量{var_name}完成==========")
                 logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>结束==========")
-                tmp_dependence_res = dependence_res
             else:
                 logger.info(
                     f"==========<{api_name}>前置依赖已被调用过，本次不再调用,依赖参数{var_name}直接从cache表中读取==========")
-                tmp_dependence_res = cache.get(var_name)
-            if jsonpath_expr:
-                if ':' in jsonpath_expr:
-                    json_path, index = jsonpath_expr.split(':')
-                else:
-                    index = 0
-                extract_var = jsonpath(tmp_dependence_res, jsonpath_expr)
-                if extract_var is False:
-                    raise JsonPathExtractFailed(tmp_dependence_res, jsonpath_expr)
-                if not kwargs.get('data'):
-                    kwargs['data'] = dict()
-                kwargs['data'][var_name] = extract_var[index]
 
-            if require_param:
-                if len(kwargs['dependence']) == 1:
-                    kwargs.pop('dependence')
-                else:
-                    kwargs['dependence'].pop(var_name)
             r = func(*args, **kwargs)
             return r
 
