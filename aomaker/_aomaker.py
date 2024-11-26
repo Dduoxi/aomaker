@@ -416,6 +416,8 @@ def kwargs_handle(cls):
                     kwargs['body'] = {}
                 if not kwargs.get('data'):
                     kwargs['data'] = {}
+                if not kwargs.get('params'):
+                    kwargs['params'] = {}
             return func(*args, **kwargs)
 
         return wrapper
