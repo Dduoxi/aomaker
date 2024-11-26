@@ -41,13 +41,13 @@ class Model(dict):
         :return 最终的请求参数
         """
         res = dict()
-        # mapping_keys = []
+        mapping_keys = []
         annotations = cls.__annotations__  # 获取类的所有字段和注解
         for name, data_type in annotations.items():  # 遍历所有字段和注解
             mapping, default, regex = getattr(cls, name)
             if mapping is None:
                 mapping = name
-            # mapping_keys.append(mapping)
+            mapping_keys.append(mapping)
             if mapping not in kwargs:  # 检查 kwargs 中是否存在该字段
                 if data_type.__name__ not in ['str', 'int', 'bool']:
                     raise ParamsException(f'非常态参数为必传参数: {name}')
@@ -65,8 +65,8 @@ class Model(dict):
                 if not isinstance(kwargs[mapping], data_type):
                     raise ParamsException(f'参数类型传入错误: {name}')
                 res[name] = kwargs[mapping]
-        # kwargs_keys = kwargs.keys()
-        # if not set(kwargs_keys).issubset(set(mapping_keys)):
-        #     diff = set(kwargs_keys).difference(set(mapping_keys))
-        #     raise ParamsException(f'传入未知映射Key: {diff}')
+        kwargs_keys = kwargs.keys()
+        if not set(kwargs_keys).issubset(set(mapping_keys)):
+            diff = set(kwargs_keys).difference(set(mapping_keys))
+            raise ParamsException(f'传入未知映射Key: {diff}')
         return {k: v for k, v in res.items() if v is not None}  # 返回结果并滤掉为None且未传入的字段
