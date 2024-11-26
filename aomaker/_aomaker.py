@@ -86,7 +86,7 @@ def dependence(dependent_api: Callable or str, var_name: Text, jsonpath_expr: st
                                                                    *out_args, **dependent_param)
                 depend_api_name = depend_api_info.get("name")
                 # cache.set(var_name, dependence_res, api_info=depend_api_info)  # 存储由依赖接口自身完成
-                logger.info(f"==========存储全局变量{var_name}完成==========")
+                # logger.info(f"==========存储全局变量{var_name}完成==========")
                 logger.info(f"==========<{api_name}>前置依赖<{depend_api_name}>结束==========")
                 tmp_dependence_res = dependence_res
             else:
