@@ -124,8 +124,9 @@ def be_dependence(var_name: Text, jsonpath_expr: str = ""):
                     extract_var = jsonpath(res, jsonpath_expr)
                     if extract_var is False:
                         raise JsonPathExtractFailed(res, jsonpath_expr)
-                    res = extract_var[index]
-                cache.set(var_name, res, api_info=api_info)
+                    cache.set(var_name, extract_var[index], api_info=api_info)
+                else:
+                    cache.set(var_name, res, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
