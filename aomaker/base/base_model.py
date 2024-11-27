@@ -49,8 +49,8 @@ class Model(dict):
                 mapping = name
             mapping_keys.append(mapping)
             if mapping not in kwargs:  # 检查 kwargs 中是否存在该字段
-                if data_type.__name__ not in ['str', 'int', 'bool']:
-                    raise ParamsException(f'非常态参数为必传参数: {name}')
+                # if data_type.__name__ not in ['str', 'int', 'bool']:
+                #     raise ParamsException(f'非常态参数为必传参数: {name}')
                 if default == '{}':
                     res[name] = cls.fake(data_type)
                 elif regex:
