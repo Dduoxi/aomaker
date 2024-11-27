@@ -128,9 +128,9 @@ def be_dependence(var_name: Text, condition: Union[Dict, bool], jsonpath_expr: s
                     "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个位置参数始终为类实例
                 }
                 if jsonpath_expr:
-                    cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, resp), api_info=api_info)
+                    cache.update(var_name, get_value_by_jsonpath(jsonpath_expr, resp)) if cache.get(var_name) else cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, resp), api_info=api_info)
                 else:
-                    cache.set(var_name, resp, api_info=api_info)
+                    cache.update(var_name, resp) if cache.get(var_name) else cache.set(var_name, resp, api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
