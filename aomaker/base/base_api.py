@@ -153,6 +153,7 @@ def _handle_print_info(request_payload, response, caller_name):
 
 
 class BaseApi:
+
     IS_HTTP_RETRY = False
     HTTP_RETRY_COUNTS = 3
     HTTP_RETRY_INTERVAL = 2  # 单位：s

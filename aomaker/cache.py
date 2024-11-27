@@ -156,7 +156,7 @@ class Cache(SQLiteDB):
         res = self.get(key)
         extract_var = jsonpath(res, jsonpath_expr)
         if extract_var is False:
-            raise JsonPathExtractFailed(res,jsonpath_expr)
+            return None
         extract_var = extract_var[expr_index]
         return extract_var
 
