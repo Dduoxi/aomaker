@@ -49,8 +49,6 @@ class Model(dict):
                 mapping = name
             mapping_keys.append(mapping)
             if mapping not in kwargs:  # 检查 kwargs 中是否存在该字段
-                # if data_type.__name__ not in ['str', 'int', 'bool']:
-                #     raise ParamsException(f'非常态参数为必传参数: {name}')
                 if default == '{}':
                     res[name] = cls.fake(data_type)
                 elif regex:
@@ -62,8 +60,6 @@ class Model(dict):
                 else:
                     res[name] = None
             else:
-                if not isinstance(kwargs[mapping], data_type):
-                    raise ParamsException(f'参数类型传入错误: {name}')
                 res[name] = kwargs[mapping]
         kwargs_keys = kwargs.keys()
         if not set(kwargs_keys).issubset(set(mapping_keys)):
