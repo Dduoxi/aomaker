@@ -195,7 +195,7 @@ class BaseTestcase:
                             raise CaseError(f'此类型下执行的语句需要为条件语句: {info[0].format(**others)}')
                         assert actual_value == info[1], msg
                     case 'resp':
-                        if isinstance(info, str):
+                        if not isinstance(info, str):
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
                             expected_value = json.loads(info)
