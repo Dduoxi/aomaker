@@ -36,43 +36,46 @@ class FeiShu:
 
     def _send_markdown(self, content):
         json_data = {
-            "config": {
-                "update_multi": True
-            },
-            "i18n_elements": {
-                "zh_cn": [
-                    {
-                        "tag": "markdown",
-                        "content": content,
-                        "text_align": "left",
-                        "text_size": "normal"
-                    }
-                ]
-            },
-            "i18n_header": {
-                "zh_cn": {
-                    "title": {
-                        "tag": "plain_text",
-                        "content": "自动化测试通知"
-                    },
-                    "subtitle": {
-                        "tag": "plain_text",
-                        "content": ""
-                    },
-                    "text_tag_list": [
+            "msg_type": "interactive",
+            "card": {
+                "config": {
+                    "update_multi": True
+                },
+                "i18n_elements": {
+                    "zh_cn": [
                         {
-                            "tag": "text_tag",
-                            "text": {
-                                "tag": "plain_text",
-                                "content": "Interface"
-                            },
-                            "color": "neutral"
+                            "tag": "markdown",
+                            "content": content,
+                            "text_align": "left",
+                            "text_size": "normal"
                         }
-                    ],
-                    "template": "blue",
-                    "ud_icon": {
-                        "tag": "standard_icon",
-                        "token": "vote_colorful"
+                    ]
+                },
+                "i18n_header": {
+                    "zh_cn": {
+                        "title": {
+                            "tag": "plain_text",
+                            "content": "自动化测试通知"
+                        },
+                        "subtitle": {
+                            "tag": "plain_text",
+                            "content": ""
+                        },
+                        "text_tag_list": [
+                            {
+                                "tag": "text_tag",
+                                "text": {
+                                    "tag": "plain_text",
+                                    "content": "Interface"
+                                },
+                                "color": "neutral"
+                            }
+                        ],
+                        "template": "blue",
+                        "ud_icon": {
+                            "tag": "standard_icon",
+                            "token": "vote_colorful"
+                        }
                     }
                 }
             }
