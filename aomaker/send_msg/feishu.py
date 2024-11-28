@@ -18,7 +18,7 @@ class FeiShu:
 
     def __init__(self, tester="fj", title="自动化测试通知", report_address=""):
         self.feishu_conf = load_yaml(utils_yaml_path)['feishu']
-        self.curl = 'https://open.feishu.cn/open-apis/bot/v2/hook/cb40e843-c4c1-4d08-a1ba-003eedb79fcc'
+        self.curl = self.feishu_conf['webhook']
         self.headers = {"Content-Type": "application/json"}
         self.test_results = CaseSummary()
         self.total = str(self.test_results.total_count)
