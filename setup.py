@@ -36,7 +36,7 @@ setup(
         'PyYAML==6.0',
         'requests==2.31.0',
         'allure-pytest==2.8.24',
-        'pydantic==1.10.2',
+        'pydantic==2.10.2',
         'mitmproxy==9.0.1',
         'colorlog==6.7.0',
         'jsonschema==4.19.1',

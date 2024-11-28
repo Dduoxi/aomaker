@@ -3,7 +3,7 @@ from typing import List, Text, Dict, Any, Mapping, Union
 from pydantic import BaseModel, Field, conlist, validator
 from pydantic.types import constr
 
-AssertField = conlist(Any, min_items=2, max_items=3)
+AssertField = conlist(Any, min_length=2, max_length=3)
 
 
 class AssertFieldEnum(Text, Enum):
