@@ -86,7 +86,7 @@ def response_callback(payload: dict, condition: Union[Dict, bool]):
             std_logger(print_info)
 
             if isinstance(resp_body, dict):
-                is_execute = _is_execute_cycle_func(response, condition)
+                is_execute = _is_execute_cycle_func(resp_body, condition)
                 if is_execute:
                     to_schema = genson(resp_body)
                     schema.set(caller_of_method, to_schema)
