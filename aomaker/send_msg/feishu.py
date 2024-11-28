@@ -81,26 +81,26 @@ class FeiShu:
         if res.json()['code'] != 0:
             raise ValueError(f"飞书「消息卡片类型」消息发送失败")
 
-    def send_detail_msg(self, sep="_"):
+    def send_detail_msg(self, sep=" "):
         reports = get_allure_results(sep=sep)
         if reports:
             markdown_li = []
             for product, result in reports.items():
-                format_ = f"\t- <font color=\"green\">🎯「{product}」成功率: {result['passed_rate']}</font>"
+                format_ = f"\t- 🎯「{product}」成功率: <font color=\"green\">{result['passed_rate']}</font>"
                 markdown_li.append(format_)
             format_product_rate = "\n".join(markdown_li)
         else:
             format_product_rate = ""
         text = (f"**基本信息**\n"
-                f" - ❤用例  总数：<font color=\"red\">{self.total}个</font>\n\n\n"
+                f" - ❤用例  总数：<font color=\"orange\">{self.total}个</font>\n\n\n"
                 f"**执行结果**\n"
                 f"- 🎯运行成功率: <font color=\"green\">{self.passed_rate}</font>\n"
                 f"{format_product_rate}\n"
                 f"- 😁成功用例数：<font color=\"green\">{self.passed}个</font>\n"
-                f"- 😭失败用例数：`{self.failed}个`\n"
-                f"- 😡阻塞用例数：`{self.broken}个`\n"
-                f"- 😶跳过用例数：<font color=\"yellow\">{self.skipped}个</font>\n"
-                f"- 🕓用例执行时长：<font color=\"yellow\">{self.duration}</font>\n\n\n"
+                f"- 😭失败用例数：<font color=\"red\">{self.failed}个</font>\n"
+                f"- 😡阻塞用例数：<font color=\"yellow\">{self.broken}个</font>\n"
+                f"- 😶跳过用例数：<font color=\"grey-600\">{self.skipped}个</font>\n"
+                f"- 🕓用例执行时长：<font color=\"wathet-600\">{self.duration}</font>\n\n\n"
                 f"**测试报告**\n"
                 f"- 📉[查看>>测试报告]({self.report_address})")
         self._send_markdown(text)
