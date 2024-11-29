@@ -13,7 +13,7 @@ utils_yaml_path = os.path.join(CONF_DIR, Conf.UTILS_CONF_NAME)
 
 class FeiShu:
     """
-    企业微信消息通知
+    飞书消息通知
     """
 
     def __init__(self, tester="fj", title="自动化测试通知", report_address=""):
