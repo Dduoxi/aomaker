@@ -89,7 +89,7 @@ class FeiShu:
         if reports:
             markdown_li = []
             for product, result in reports.items():
-                format_ = f"\t- ✅ <font color=\"yellow-600\">MARK</font>「{product}」成功率: <font color=\"green\">{result['passed_rate']}</font>"
+                format_ = f"\t- ✅ MARK「<font color=\"indigo-700\">{product}</font>」成功率: <font color=\"green\">{result['passed_rate']}</font>"
                 markdown_li.append(format_)
             format_product_rate = "\n".join(markdown_li)
         else:
