@@ -142,7 +142,7 @@ class BaseTestcase:
     def assert_resp_value(actual_value, expected_value):
         compare_two_dict_res = compare_two_dict(expected_value, actual_value)
         try:
-            assert compare_two_dict_res is not None
+            assert compare_two_dict_res is None
         except AssertionError as e:
             logger.error(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
             raise e
