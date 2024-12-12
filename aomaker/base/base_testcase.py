@@ -1,4 +1,5 @@
 # --coding:utf-8--
+import json
 from typing import Any
 
 from jsonpath import jsonpath
@@ -6,6 +7,7 @@ from jsonschema import validate, ValidationError
 
 from aomaker.log import logger
 from aomaker.cache import Schema
+from aomaker._aomaker import compare_two_dict
 from aomaker.exceptions import SchemaNotFound, CaseError
 
 
@@ -136,13 +138,22 @@ class BaseTestcase:
             logger.error(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
             raise e
 
+    @staticmethod
+    def assert_resp_value(actual_value, expected_value):
+        compare_two_dict_res = compare_two_dict(expected_value, actual_value)
+        try:
+            assert compare_two_dict_res is None
+        except AssertionError as e:
+            logger.error(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
+            raise e
+
     def func_assert(self, assert_info: list[dict], resp: Any = None, **others):
         funcs = []
         for expected in assert_info:
             tmp = expected.keys()
             for t in tmp:
                 funcs.append(t)
-        if any(item in funcs for item in ['eq', 'neq', 'gt', 'ge', 'lt', 'le']) and not hasattr(resp, '__getitem__'):
+        if any(item in funcs for item in ['eq', 'neq', 'gt', 'ge', 'lt', 'le', 'resp']) and not hasattr(resp, '__getitem__'):
             raise CaseError(f'此类型断言传入的resp无法使用: funcs: {funcs}, resp: {resp}')
         assert_func = {
             'eq': self.assert_eq,
@@ -153,7 +164,8 @@ class BaseTestcase:
             'le': self.assert_le,
             'in': self.assert_in,
             'nin': self.assert_nin,
-            'condition': eval
+            'condition': eval,
+            'resp': self.assert_resp_value
         }
         for expected in assert_info:
             for key, info in expected.items():
@@ -182,5 +194,13 @@ class BaseTestcase:
                         if not isinstance(actual_value, bool):
                             raise CaseError(f'此类型下执行的语句需要为条件语句: {info[0].format(**others)}')
                         assert actual_value == info[1], msg
+                    case 'resp':
+                        if not isinstance(info, str):
+                            raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
+                        try:
+                            expected_value = json.loads(info)
+                        except Exception as e:
+                            raise CaseError(f'尝试装换传入值为dict失败,msg:{e}')
+                        assert_func[key](resp, expected_value)
                     case _:
                         raise CaseError(f'无效类型断言: {key}')

@@ -73,3 +73,7 @@ class CaseError(AoMakerException):
 class ParamsException(AoMakerException):
     def __init__(self, *args):
         super().__init__(*args)
+
+class CompareException(AoMakerException):
+    def __init__(self, *args):
+        super().__init__(*args)

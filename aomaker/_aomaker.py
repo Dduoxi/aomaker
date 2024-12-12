@@ -1,7 +1,7 @@
 # --coding:utf-8--
 import os
 import importlib
-from typing import List, Dict, Callable, Text, Tuple, Union
+from typing import List, Dict, Callable, Text, Tuple, Union, Optional
 from functools import wraps
 from dataclasses import dataclass as dc, field
 
@@ -13,7 +13,7 @@ from genson import SchemaBuilder
 from aomaker.cache import cache
 from aomaker.log import logger
 from aomaker.path import BASEDIR
-from aomaker.exceptions import FileNotFound, YamlKeyError, JsonPathExtractFailed
+from aomaker.exceptions import FileNotFound, YamlKeyError, JsonPathExtractFailed, CompareException
 from aomaker.hook_manager import cli_hook, session_hook
 from aomaker.models import ExecuteAsyncJobCondition
 
@@ -423,6 +423,62 @@ def kwargs_handle(cls):
         if callable(attr_value):
             setattr(cls, attr_name, decorator(attr_value))
     return cls
+
+
+def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
+    """
+    朴实无华的匹配算法
+    :param expectedDict:预期结果
+    :param aimDict: 实际结果
+    :return: 若匹配异常则返回assert_exception_detail失败详情，否则返回None
+    """
+    assert_exception_detail = dict()
+    try:
+        for k, v in expectedDict.items():
+            if k not in aimDict:  # 实际值缺少这个key直接结束匹配
+                raise CompareException(f'缺少key:【{k}】', k, "not found key")
+            else:
+                if isinstance(v, dict):  # v为字典时进入此逻辑
+                    if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
+                        raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
+                    tmp = compare_two_dict(v, aimDict.get(k))
+                    if tmp is not None and len(tmp) > 0:  # 递归对实际值进行匹配
+                        raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+                elif isinstance(v, list):  # v为列表时进入此逻辑
+                    if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
+                        raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
+                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个键值对预期值进行排序
+                        v.sort(key=lambda x: list(x.items())[0])
+                    else:
+                        v.sort()  # 非dict正常排序
+                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个键值对实际值进行排序
+                        aimDict.get(k).sort(key=lambda x: list(x.items())[0])
+                    else:
+                        aimDict.get(k).sort()  # 非dict正常排序
+                    count = len(v)
+                    actual_count = len(aimDict.get(k))
+                    if count != actual_count:  # 对比预期值和实际值list长度，不一致则结束匹配
+                        raise CompareException(f'【{k}】值数组长度有误', str(count), str(actual_count))
+                    for i in range(0, count):  # 经过排序后预期值与实际值中对顺序应已一致，故直接一对一匹配
+                        ev = v[i]
+                        av = aimDict.get(k)[i]
+                        if isinstance(ev, dict):  # 元素若为dict则进行递归
+                            tmp = compare_two_dict(ev, av)
+                            if tmp is not None and len(tmp) > 0:
+                                raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+                        else:  # 非dict正常一对一匹配
+                            if ev != av:
+                                raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
+                else:  # 不为list或dict则对比值
+                    if v != aimDict.get(k):
+                        raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
+    except CompareException as e:
+        reason, excepted, real_result = e.args  # 记录失败对reason、预期值、实际值
+        assert_exception_detail['reason'] = reason
+        assert_exception_detail['excepted'] = excepted
+        assert_exception_detail['real_result'] = real_result
+        print(assert_exception_detail)
+    return assert_exception_detail if len(assert_exception_detail) > 0 else None  # 若有异常则返回异常详情，否则返回空
 
 
 if __name__ == '__main__':

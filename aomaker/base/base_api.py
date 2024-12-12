@@ -1,6 +1,7 @@
 # --coding:utf-8--
 import inspect
 import json
+from typing import Union, Dict
 
 import allure
 import requests
@@ -12,7 +13,7 @@ from dataclasses import is_dataclass
 
 from aomaker.log import logger, aomaker_logger
 from aomaker.cache import Config, Cache, schema
-from aomaker._aomaker import genson
+from aomaker._aomaker import genson, _is_execute_cycle_func
 from aomaker.exceptions import HttpRequestError
 from aomaker.aomaker import AoMakerRetry
 from aomaker.path import API_DIR
@@ -54,7 +55,7 @@ def _render_template(template_str, data):
     return temp.render(data)
 
 
-def response_callback(payload: dict):
+def response_callback(payload: dict, condition: Union[Dict, bool]):
     def inner(response: requests.models.Response, *args, **kwargs):
         api_caller = _get_api_frame()
         caller_class_obj = api_caller.f_locals['self']
@@ -85,9 +86,13 @@ def response_callback(payload: dict):
             std_logger(print_info)
 
             if isinstance(resp_body, dict):
-                to_schema = genson(resp_body)
-                schema.set(caller_of_method, to_schema)
-                logger.debug(f'接口{caller_name}的响应jsonschema已保存到schema表中')
+                is_execute = _is_execute_cycle_func(resp_body, condition)
+                if is_execute:
+                    to_schema = genson(resp_body)
+                    schema.set(caller_of_method, to_schema)
+                    logger.debug(f'接口{caller_name}的响应jsonschema已保存到schema表中')
+                else:
+                    logger.debug(f'接口{caller_name}运行后不满足jsonschema存储条件')
 
             try:
                 allure.attach(json.dumps(allure_info, indent=2, separators=(',', ':'), ensure_ascii=False),
@@ -153,12 +158,12 @@ def _handle_print_info(request_payload, response, caller_name):
 
 
 class BaseApi:
-
     IS_HTTP_RETRY = False
     HTTP_RETRY_COUNTS = 3
     HTTP_RETRY_INTERVAL = 2  # 单位：s
     IS_CHECK_RESPONSE_OK = True
     RESPONSE_TO_JSON = True
+    SET_SCHEMA_CONDITION = True
 
     def __init__(self):
         self.cache = Cache()
@@ -217,7 +222,7 @@ class BaseApi:
 
     def get_response_hook(self, payload: dict) -> dict:
 
-        return {"response": self._response_callback(payload)}
+        return {"response": self._response_callback(payload, self.SET_SCHEMA_CONDITION)}
 
     def _payload_schema(self, **kwargs):
         api_path = kwargs.get('api_path', '')
