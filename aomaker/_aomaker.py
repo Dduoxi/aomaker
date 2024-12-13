@@ -1,6 +1,7 @@
 # --coding:utf-8--
 import os
 import importlib
+from types import NoneType
 from typing import List, Dict, Callable, Text, Tuple, Union, Optional
 from functools import wraps
 from dataclasses import dataclass as dc, field
@@ -425,6 +426,14 @@ def kwargs_handle(cls):
     return cls
 
 
+def get_key_index(data):
+    data = list(data.items())
+    for i in range(len(data)):
+        kv_set = data[i]
+        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+            return i
+    raise KeyError("没有找到非空非Dict的key")
+
 def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
     """
     朴实无华的匹配算法
@@ -447,12 +456,14 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                 elif isinstance(v, list):  # v为列表时进入此逻辑
                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
-                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中最后一个键值对预期值进行排序
-                        v.sort(key=lambda x: list(x.items())[-1])
+                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
+                        sort_key_index = get_key_index(v[0])
+                        v.sort(key=lambda x: list(x.items())[sort_key_index])
                     else:
                         v.sort()  # 非dict正常排序
-                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中最后一个键值对实际值进行排序
-                        aimDict.get(k).sort(key=lambda x: list(x.items())[-1])
+                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
+                        sort_key_index = get_key_index(v[0])
+                        aimDict.get(k).sort(key=lambda x: list(x.items())[sort_key_index])
                     else:
                         aimDict.get(k).sort()  # 非dict正常排序
                     count = len(v)
@@ -484,3 +495,4 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
 if __name__ == '__main__':
     x = data_maker('aomaker/data/api_data/job.yaml', 'job', 'submit_job')
     print(x)
+
