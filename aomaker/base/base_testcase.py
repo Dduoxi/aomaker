@@ -195,12 +195,13 @@ class BaseTestcase:
                             raise CaseError(f'此类型下执行的语句需要为条件语句: {info[0].format(**others)}')
                         assert actual_value == info[1], msg
                     case 'resp':
-                        if not isinstance(info, str):
+                        actual_value = jsonpath(resp, info[0])[0]
+                        if not isinstance(info[1], str):
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
-                            expected_value = json.loads(info)
+                            expected_value = json.loads(info[1])
                         except Exception as e:
                             raise CaseError(f'尝试装换传入值为dict失败,msg:{e}')
-                        assert_func[key](resp, expected_value)
+                        assert_func[key](actual_value, expected_value)
                     case _:
                         raise CaseError(f'无效类型断言: {key}')
