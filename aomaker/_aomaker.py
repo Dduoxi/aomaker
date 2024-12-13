@@ -427,9 +427,9 @@ def kwargs_handle(cls):
 
 
 def get_key(data):
-    for key, value in data.items():
-        if not isinstance(value, NoneType) and not isinstance(value, list) and not isinstance(value, dict):
-            return key
+    for kv_set in data.items():
+        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+            return kv_set
     raise KeyError("没有找到非空非Dict的key")
 
 def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
