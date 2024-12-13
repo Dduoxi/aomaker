@@ -196,6 +196,8 @@ class BaseTestcase:
                         assert actual_value == info[1], msg
                     case 'resp':
                         actual_value = jsonpath(resp, info[0])[0]
+                        if isinstance(actual_value, dict):
+                            raise CaseError(f'响应结果提取异常')
                         if not isinstance(info[1], str):
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
