@@ -447,12 +447,12 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                 elif isinstance(v, list):  # v为列表时进入此逻辑
                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
-                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个键值对预期值进行排序
-                        v.sort(key=lambda x: list(x.items())[0])
+                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中最后一个键值对预期值进行排序
+                        v.sort(key=lambda x: list(x.items())[-1])
                     else:
                         v.sort()  # 非dict正常排序
-                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个键值对实际值进行排序
-                        aimDict.get(k).sort(key=lambda x: list(x.items())[0])
+                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中最后一个键值对实际值进行排序
+                        aimDict.get(k).sort(key=lambda x: list(x.items())[-1])
                     else:
                         aimDict.get(k).sort()  # 非dict正常排序
                     count = len(v)
