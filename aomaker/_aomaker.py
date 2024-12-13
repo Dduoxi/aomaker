@@ -428,7 +428,7 @@ def kwargs_handle(cls):
 
 def get_key(data):
     for key, value in data.items():
-        if not isinstance(value, NoneType) and not isinstance(value, dict):
+        if not isinstance(value, NoneType) and not isinstance(value, list) and not isinstance(value, dict):
             return key
     raise KeyError("没有找到非空非Dict的key")
 
@@ -455,12 +455,12 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
                     sort_key = get_key(v[0])
-                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict的键值对预期值进行排序
+                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
                         # v.sort(key=lambda x: list(x.items())[-1])
                         v.sort(key=sort_key)
                     else:
                         v.sort()  # 非dict正常排序
-                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个非空非dict的键值对预期值进行排序
+                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
                         # aimDict.get(k).sort(key=lambda x: list(x.items())[-1])
                         aimDict.get(k).sort(key=sort_key)
                     else:
