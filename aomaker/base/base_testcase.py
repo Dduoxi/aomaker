@@ -1,5 +1,6 @@
 # --coding:utf-8--
 import json
+from json import JSONDecodeError
 from typing import Any
 
 from jsonpath import jsonpath
@@ -8,7 +9,7 @@ from jsonschema import validate, ValidationError
 from aomaker.log import logger
 from aomaker.cache import Schema
 from aomaker._aomaker import compare_two_dict
-from aomaker.exceptions import SchemaNotFound, CaseError
+from aomaker.exceptions import SchemaNotFound, CaseError, CompareException
 
 
 class BaseTestcase:
@@ -200,8 +201,10 @@ class BaseTestcase:
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
                             expected_value = json.loads(info[1])
-                        except Exception as e:
+                            assert_func[key](actual_value, expected_value)
+                        except JSONDecodeError as e:
                             raise CaseError(f'尝试装换传入值为dict失败,msg:{e}')
-                        assert_func[key](actual_value, expected_value)
+                        except CompareException as e:
+                            raise CaseError(e.args[0] + f"\nResp: {resp}")
                     case _:
                         raise CaseError(f'无效类型断言: {key}')
