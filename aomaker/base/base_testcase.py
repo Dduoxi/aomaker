@@ -143,9 +143,9 @@ class BaseTestcase:
         compare_two_dict_res = compare_two_dict(expected_value, actual_value)
         try:
             assert compare_two_dict_res is None
-        except AssertionError as e:
+        except AssertionError:
             logger.error(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
-            raise e
+            raise AssertionError(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
 
     def func_assert(self, assert_info: list[dict], resp: Any = None, **others):
         funcs = []
