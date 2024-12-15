@@ -441,6 +441,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
     :param aimDict: 实际结果
     :return: 若匹配异常则返回assert_exception_detail失败详情，否则返回None
     """
+    if type(aimDict) != type(expectedDict):
+        raise CompareException(f"传入类型与预期不符，预期为:【{type(expectedDict)}】, 实际为:【{type(aimDict)}】")
     assert_exception_detail = dict()
     try:
         for k, v in expectedDict.items():
