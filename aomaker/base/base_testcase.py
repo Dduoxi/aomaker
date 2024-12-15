@@ -1,5 +1,6 @@
 # --coding:utf-8--
 import json
+from json import JSONDecodeError
 from typing import Any
 
 from jsonpath import jsonpath
@@ -8,7 +9,7 @@ from jsonschema import validate, ValidationError
 from aomaker.log import logger
 from aomaker.cache import Schema
 from aomaker._aomaker import compare_two_dict
-from aomaker.exceptions import SchemaNotFound, CaseError
+from aomaker.exceptions import SchemaNotFound, CaseError, CompareException
 
 
 class BaseTestcase:
@@ -143,9 +144,9 @@ class BaseTestcase:
         compare_two_dict_res = compare_two_dict(expected_value, actual_value)
         try:
             assert compare_two_dict_res is None
-        except AssertionError as e:
+        except AssertionError:
             logger.error(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
-            raise e
+            raise AssertionError(f"resp断言失败, 响应结果不符合预期, message: {compare_two_dict_res}")
 
     def func_assert(self, assert_info: list[dict], resp: Any = None, **others):
         funcs = []
@@ -196,14 +197,14 @@ class BaseTestcase:
                         assert actual_value == info[1], msg
                     case 'resp':
                         actual_value = jsonpath(resp, info[0])[0]
-                        if not actual_value:
-                            raise CaseError(f'响应结果提取异常\nresp:{resp}')
                         if not isinstance(info[1], str):
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
                             expected_value = json.loads(info[1])
-                        except Exception as e:
+                            assert_func[key](actual_value, expected_value)
+                        except JSONDecodeError as e:
                             raise CaseError(f'尝试装换传入值为dict失败,msg:{e}')
-                        assert_func[key](actual_value, expected_value)
+                        except CompareException as e:
+                            raise CaseError(e.args[0] + f"\nResp: {resp}")
                     case _:
                         raise CaseError(f'无效类型断言: {key}')
