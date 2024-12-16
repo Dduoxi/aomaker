@@ -55,7 +55,7 @@ from aomaker.models import ExecuteAsyncJobCondition
 #
 #     return decorator
 
-def get_value_by_jsonpath(jsonpath_expr, datasource):
+def get_value_by_jsonpath(jsonpath_expr, datasource, index=0):
     if ':' in jsonpath_expr:
         json_path, index = jsonpath_expr.split(':')
     else:
@@ -430,7 +430,8 @@ def get_key_index(data):
     data = list(data.items())
     for i in range(len(data)):
         kv_set = data[i]
-        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+        # if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+        if not isinstance(kv_set[1], NoneType):
             return i
     raise KeyError("没有找到非空非Dict的key")
 
