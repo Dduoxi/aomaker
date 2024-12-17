@@ -23,7 +23,7 @@ class BaseTestcase:
             assert actual_value == expected_value, msg
         except AssertionError as e:
             logger.error(f"eq断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"eq断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_gt(actual_value, expected_value, msg: str = ""):
@@ -34,7 +34,7 @@ class BaseTestcase:
             assert actual_value > expected_value, msg
         except AssertionError as e:
             logger.error(f"gt断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"gt断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_lt(actual_value, expected_value, msg: str = None):
@@ -45,7 +45,7 @@ class BaseTestcase:
             assert actual_value < expected_value, msg
         except AssertionError as e:
             logger.error(f"lt断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"lt断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_neq(actual_value, expected_value, msg: str = ""):
@@ -56,7 +56,7 @@ class BaseTestcase:
             assert actual_value != expected_value, msg
         except AssertionError as e:
             logger.error(f"neq断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"neq断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_ge(actual_value, expected_value, msg: str = ""):
@@ -67,7 +67,7 @@ class BaseTestcase:
             assert actual_value >= expected_value, msg
         except AssertionError as e:
             logger.error(f"ge断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"ge断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_le(actual_value, expected_value, msg: str = ""):
@@ -78,7 +78,7 @@ class BaseTestcase:
             assert actual_value <= expected_value, msg
         except AssertionError as e:
             logger.error(f"le断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"le断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_contains(actual_value, expected_value, msg: str = ""):
@@ -89,7 +89,7 @@ class BaseTestcase:
             assert expected_value in actual_value, msg
         except AssertionError as e:
             logger.error(f"contains断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"contains断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_schema(instance, api_name):
@@ -122,7 +122,7 @@ class BaseTestcase:
                 assert expected_value in actual_value, msg
         except AssertionError as e:
             logger.error(f"in断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
-            raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
+            raise AssertionError(f"in断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
     def assert_nin(actual_value, expected_value, msg: str = ""):
