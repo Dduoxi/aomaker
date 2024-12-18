@@ -458,7 +458,7 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                 elif isinstance(v, list):  # v为列表时进入此逻辑
                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
-                    if isinstance(v[0], list) and isinstance(aimDict.get(k)[0], list):
+                    if isinstance(v[0], list) and isinstance(aimDict.get(k)[0], list) and len(v[0]) > 0 and len(aimDict.get(k)[0]) > 0:
                         tmp = None
                         for i in range(len(v) - 1):
                             e_tmp_dict = {'tmp': v[i]}
