@@ -430,11 +430,9 @@ def get_key_index(data):
     data = list(data.items())
     for i in range(len(data)):
         kv_set = data[i]
-        # if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
-        # if not isinstance(kv_set[1], NoneType):
-        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], dict):
+        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
             return i
-    raise KeyError("没有找到非空非Dict的key")
+    return 0
 
 def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
     """
