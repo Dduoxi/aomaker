@@ -458,6 +458,14 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                 elif isinstance(v, list):  # v为列表时进入此逻辑
                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
+                    if isinstance(v[0], list) and isinstance(aimDict.get(k)[0], list):
+                        tmp = None
+                        for i in range(len(v) - 1):
+                            e_tmp_dict = {'tmp': v[i]}
+                            a_tmp_dict = {'tmp': aimDict.get(k)[i]}
+                            tmp = compare_two_dict(e_tmp_dict, a_tmp_dict)
+                        if tmp is not None and len(tmp) > 0:
+                            raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
                     if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
                         sort_key_index = get_key_index(v[0])
                         v.sort(key=lambda x: list(x.items())[sort_key_index])
