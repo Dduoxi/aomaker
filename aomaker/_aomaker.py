@@ -426,13 +426,13 @@ def kwargs_handle(cls):
     return cls
 
 
-def get_key_index(data):
-    data = list(data.items())
-    for i in range(len(data)):
-        kv_set = data[i]
-        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
-            return i
-    return 0
+# def get_key_index(data):
+#     data = list(data.items())
+#     for i in range(len(data)):
+#         kv_set = data[i]
+#         if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+#             return i
+#     return 0
 #
 # def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
 #     """
@@ -523,10 +523,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                         # 对列表进行排序，忽略顺序
                         expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
                         actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
-
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
                             raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
-
                         for ev, av in zip(expected_sorted, actual_sorted):
                             if isinstance(ev, dict):
                                 tmp = compare_two_dict(ev, av)
