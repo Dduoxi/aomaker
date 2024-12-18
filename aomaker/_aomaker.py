@@ -521,13 +521,7 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                         if not isinstance(aimDict[k], list):
                             raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict[k])))
                         # 对列表进行排序，忽略顺序
-                        if isinstance(v[0], list):
-                            for i in range(len(v) - 1):
-                                sorted(v[i], key=lambda x: list(x.items())[0])
                         expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
-                        if isinstance(aimDict[k][0], list):
-                            for i in range(len(aimDict[k]) - 1):
-                                sorted(aimDict[k][i], key=lambda x: list(x.items())[0])
                         actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
 
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
