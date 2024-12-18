@@ -83,7 +83,7 @@ def parse_allure_res_json():
 def _get_marks_group_from_pytest_ini() -> str:
     pytest_config_parser = HandleIni(PYTEST_INI_DIR)
     try:
-        marks_group = pytest_config_parser.get("pytest", "marks_group")
+        marks_group = pytest_config_parser.get("pytest", "markers")
     except (configparser.NoSectionError, configparser.NoOptionError):
         marks_group = ""
     return marks_group
