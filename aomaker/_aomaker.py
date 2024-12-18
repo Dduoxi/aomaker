@@ -55,7 +55,7 @@ from aomaker.models import ExecuteAsyncJobCondition
 #
 #     return decorator
 
-def get_value_by_jsonpath(jsonpath_expr, datasource):
+def get_value_by_jsonpath(jsonpath_expr, datasource, index=0):
     if ':' in jsonpath_expr:
         json_path, index = jsonpath_expr.split(':')
     else:
@@ -426,72 +426,128 @@ def kwargs_handle(cls):
     return cls
 
 
-def get_key_index(data):
-    data = list(data.items())
-    for i in range(len(data)):
-        kv_set = data[i]
-        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
-            return i
-    raise KeyError("没有找到非空非Dict的key")
+# def get_key_index(data):
+#     data = list(data.items())
+#     for i in range(len(data)):
+#         kv_set = data[i]
+#         if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+#             return i
+#     return 0
+#
+# def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
+#     """
+#     朴实无华的匹配算法
+#     :param expectedDict:预期结果
+#     :param aimDict: 实际结果
+#     :return: 若匹配异常则返回assert_exception_detail失败详情，否则返回None
+#     """
+#     if type(aimDict) != type(expectedDict):
+#         raise CompareException(f"传入类型与预期不符，预期为:【{type(expectedDict).__name__}】, 实际为:【{type(aimDict).__name__}】")
+#     assert_exception_detail = dict()
+#     try:
+#         for k, v in expectedDict.items():
+#             if k not in aimDict:  # 实际值缺少这个key直接结束匹配
+#                 raise CompareException(f'缺少key:【{k}】', k, "not found key")
+#             else:
+#                 if isinstance(v, dict):  # v为字典时进入此逻辑
+#                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
+#                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
+#                     tmp = compare_two_dict(v, aimDict.get(k))
+#                     if tmp is not None and len(tmp) > 0:  # 递归对实际值进行匹配
+#                         raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+#                 elif isinstance(v, list):  # v为列表时进入此逻辑
+#                     if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
+#                         raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
+#                     if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
+#                         sort_key_index = get_key_index(v[0])
+#                         v.sort(key=lambda x: list(x.items())[sort_key_index])
+#                     else:
+#                         v.sort()  # 非dict正常排序
+#                     if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
+#                         sort_key_index = get_key_index(v[0])
+#                         aimDict.get(k).sort(key=lambda x: list(x.items())[sort_key_index])
+#                     else:
+#                         aimDict.get(k).sort()  # 非dict正常排序
+#                     count = len(v)
+#                     actual_count = len(aimDict.get(k))
+#                     if count != actual_count:  # 对比预期值和实际值list长度，不一致则结束匹配
+#                         raise CompareException(f'【{k}】值数组长度有误', str(count), str(actual_count))
+#                     for i in range(0, count):  # 经过排序后预期值与实际值中对顺序应已一致，故直接一对一匹配
+#                         ev = v[i]
+#                         av = aimDict.get(k)[i]
+#                         if isinstance(ev, dict):  # 元素若为dict则进行递归
+#                             tmp = compare_two_dict(ev, av)
+#                             if tmp is not None and len(tmp) > 0:
+#                                 raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+#                         else:  # 非dict正常一对一匹配
+#                             if ev != av:
+#                                 raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
+#                 else:  # 不为list或dict则对比值
+#                     if v != aimDict.get(k):
+#                         raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
+#     except CompareException as e:
+#         reason, excepted, real_result = e.args  # 记录失败对reason、预期值、实际值
+#         assert_exception_detail['reason'] = reason
+#         assert_exception_detail['excepted'] = excepted
+#         assert_exception_detail['real_result'] = real_result
+#         print(assert_exception_detail)
+#     return assert_exception_detail if len(assert_exception_detail) > 0 else None  # 若有异常则返回异常详情，否则返回空
 
 def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
     """
     朴实无华的匹配算法
-    :param expectedDict:预期结果
+    :param expectedDict: 预期结果
     :param aimDict: 实际结果
     :return: 若匹配异常则返回assert_exception_detail失败详情，否则返回None
     """
+    assert_exception_detail = dict()
+
+    # 检查数据类型是否相同
     if type(aimDict) != type(expectedDict):
         raise CompareException(f"传入类型与预期不符，预期为:【{type(expectedDict).__name__}】, 实际为:【{type(aimDict).__name__}】")
-    assert_exception_detail = dict()
+
     try:
-        for k, v in expectedDict.items():
-            if k not in aimDict:  # 实际值缺少这个key直接结束匹配
-                raise CompareException(f'缺少key:【{k}】', k, "not found key")
-            else:
-                if isinstance(v, dict):  # v为字典时进入此逻辑
-                    if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
-                        raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
-                    tmp = compare_two_dict(v, aimDict.get(k))
-                    if tmp is not None and len(tmp) > 0:  # 递归对实际值进行匹配
-                        raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
-                elif isinstance(v, list):  # v为列表时进入此逻辑
-                    if type(v) != type(aimDict.get(k)):  # 如果实际值类型不与预期一致，结束匹配
-                        raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict.get(k))))
-                    if len(v) > 0 and isinstance(v[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
-                        sort_key_index = get_key_index(v[0])
-                        v.sort(key=lambda x: list(x.items())[sort_key_index])
-                    else:
-                        v.sort()  # 非dict正常排序
-                    if len(aimDict.get(k)) > 0 and isinstance(aimDict.get(k)[0], dict):  # 若list中为dict，则以dict中第一个非空非dict非list的键值对预期值进行排序
-                        sort_key_index = get_key_index(v[0])
-                        aimDict.get(k).sort(key=lambda x: list(x.items())[sort_key_index])
-                    else:
-                        aimDict.get(k).sort()  # 非dict正常排序
-                    count = len(v)
-                    actual_count = len(aimDict.get(k))
-                    if count != actual_count:  # 对比预期值和实际值list长度，不一致则结束匹配
-                        raise CompareException(f'【{k}】值数组长度有误', str(count), str(actual_count))
-                    for i in range(0, count):  # 经过排序后预期值与实际值中对顺序应已一致，故直接一对一匹配
-                        ev = v[i]
-                        av = aimDict.get(k)[i]
-                        if isinstance(ev, dict):  # 元素若为dict则进行递归
-                            tmp = compare_two_dict(ev, av)
-                            if tmp is not None and len(tmp) > 0:
-                                raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
-                        else:  # 非dict正常一对一匹配
-                            if ev != av:
-                                raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
-                else:  # 不为list或dict则对比值
-                    if v != aimDict.get(k):
-                        raise CompareException(f'【{k}】值有误', str(v), str(aimDict.get(k)))
+        if isinstance(expectedDict, dict):
+            # 比较字典
+            for k, v in expectedDict.items():
+                if k not in aimDict:  # 实际值缺少这个key直接结束匹配
+                    raise CompareException(f'缺少key:【{k}】', k, "not found key")
+                else:
+                    if isinstance(v, dict):  # v为字典时进入此逻辑
+                        tmp = compare_two_dict(v, aimDict[k])
+                        if tmp is not None:
+                            raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+                    elif isinstance(v, list):  # v为列表时进入此逻辑
+                        if not isinstance(aimDict[k], list):
+                            raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict[k])))
+                        # 对列表进行排序，忽略顺序
+                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
+                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
+                        if len(expected_sorted) != len(actual_sorted):  # 对比长度
+                            raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
+                        for ev, av in zip(expected_sorted, actual_sorted):
+                            if isinstance(ev, dict):
+                                tmp = compare_two_dict(ev, av)
+                                if tmp is not None:
+                                    raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
+                            else:  # 非dict正常一对一匹配
+                                if ev != av:
+                                    raise CompareException(f'【{k}】值有误', str(ev), str(av))
+                    else:  # 直接比较值
+                        if v != aimDict[k]:
+                            raise CompareException(f'【{k}】值有误', str(v), str(aimDict[k]))
+
+        else:  # 对于基本数据类型，直接比较
+            if expectedDict != aimDict:
+                raise CompareException('值不匹配', str(expectedDict), str(aimDict))
+
     except CompareException as e:
         reason, excepted, real_result = e.args  # 记录失败对reason、预期值、实际值
         assert_exception_detail['reason'] = reason
         assert_exception_detail['excepted'] = excepted
         assert_exception_detail['real_result'] = real_result
-        print(assert_exception_detail)
-    return assert_exception_detail if len(assert_exception_detail) > 0 else None  # 若有异常则返回异常详情，否则返回空
+
+    return assert_exception_detail if assert_exception_detail else None  # 若有异常则返回异常详情，否则返回空
 
 
 if __name__ == '__main__':
