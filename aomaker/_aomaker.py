@@ -516,7 +516,7 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
                     raise CompareException(f'缺少key:【{k}】', k, "not found key")
                 else:
                     if isinstance(v, dict):  # v为字典时进入此逻辑
-                        tmp = compare_two_dict(v, aimDict[k])
+                        tmp = compare_two_dict(v, aimDict[k], skip_key)
                         if tmp is not None:
                             raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
                     elif isinstance(v, list):  # v为列表时进入此逻辑
@@ -528,7 +528,7 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
                             raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
                         for ev, av in zip(expected_sorted, actual_sorted):
                             if isinstance(ev, dict):
-                                tmp = compare_two_dict(ev, av)
+                                tmp = compare_two_dict(ev, av, skip_key)
                                 if tmp is not None:
                                     raise CompareException(tmp["reason"], tmp["excepted"], tmp["real_result"])
                             else:  # 非dict正常一对一匹配
