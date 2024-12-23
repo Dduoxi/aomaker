@@ -493,23 +493,25 @@ def kwargs_handle(cls):
 #         print(assert_exception_detail)
 #     return assert_exception_detail if len(assert_exception_detail) > 0 else None  # 若有异常则返回异常详情，否则返回空
 
-def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
+def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Optional[dict]:
     """
     朴实无华的匹配算法
     :param expectedDict: 预期结果
     :param aimDict: 实际结果
+    :param skip_key: 跳过指定key的对比
     :return: 若匹配异常则返回assert_exception_detail失败详情，否则返回None
     """
+    if skip_key is None:
+        skip_key = []
     assert_exception_detail = dict()
-
     # 检查数据类型是否相同
     if type(aimDict) != type(expectedDict):
         raise CompareException(f"传入类型与预期不符，预期为:【{type(expectedDict).__name__}】, 实际为:【{type(aimDict).__name__}】")
-
     try:
         if isinstance(expectedDict, dict):
-            # 比较字典
-            for k, v in expectedDict.items():
+            for k, v in expectedDict.items():  # 比较字典
+                if k in skip_key:  # 跳过指定key的对比
+                    continue
                 if k not in aimDict:  # 实际值缺少这个key直接结束匹配
                     raise CompareException(f'缺少key:【{k}】', k, "not found key")
                 else:
@@ -520,9 +522,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                     elif isinstance(v, list):  # v为列表时进入此逻辑
                         if not isinstance(aimDict[k], list):
                             raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict[k])))
-                        # 对列表进行排序，忽略顺序
-                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
-                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)
+                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
+                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
                             raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
                         for ev, av in zip(expected_sorted, actual_sorted):
@@ -536,17 +537,14 @@ def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
                     else:  # 直接比较值
                         if v != aimDict[k]:
                             raise CompareException(f'【{k}】值有误', str(v), str(aimDict[k]))
-
         else:  # 对于基本数据类型，直接比较
             if expectedDict != aimDict:
                 raise CompareException('值不匹配', str(expectedDict), str(aimDict))
-
     except CompareException as e:
         reason, excepted, real_result = e.args  # 记录失败对reason、预期值、实际值
         assert_exception_detail['reason'] = reason
         assert_exception_detail['excepted'] = excepted
         assert_exception_detail['real_result'] = real_result
-
     return assert_exception_detail if assert_exception_detail else None  # 若有异常则返回异常详情，否则返回空
 
 

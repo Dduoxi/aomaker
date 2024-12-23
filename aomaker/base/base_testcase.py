@@ -140,8 +140,8 @@ class BaseTestcase:
             raise AssertionError(f"nin断言失败，预期结果：{expected_value}，实际结果：{actual_value}，message：{msg}")
 
     @staticmethod
-    def assert_resp_value(actual_value, expected_value):
-        compare_two_dict_res = compare_two_dict(expected_value, actual_value)
+    def assert_resp_value(actual_value, expected_value, skip_key=None):
+        compare_two_dict_res = compare_two_dict(expected_value, actual_value, skip_key)
         try:
             assert compare_two_dict_res is None
         except AssertionError:
@@ -170,7 +170,7 @@ class BaseTestcase:
         }
         for expected in assert_info:
             for key, info in expected.items():
-                msg = info[-1] if len(info) == 3 else ""
+                msg = info[-1] if len(info) >= 3 else ""
                 if (key in ['in', 'nin'] or (key == 'condition' and '{' in info[0])) and not others:
                     raise CaseError(f'此类型断言时需传入值替换占位符: {key}')
                 match key:
@@ -201,7 +201,8 @@ class BaseTestcase:
                             raise CaseError(f'此类型下需传入预期响应结果的转义字符串')
                         try:
                             expected_value = json.loads(info[1])
-                            assert_func[key](actual_value, expected_value)
+                            skip_key = info[-1] if len(info) >= 3 else None
+                            assert_func[key](actual_value, expected_value, skip_key)
                         except JSONDecodeError as e:
                             raise CaseError(f'尝试装换传入值为dict失败,msg:{e}')
                         except CompareException as e:
