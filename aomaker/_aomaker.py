@@ -496,11 +496,11 @@ def get_key_index(data):
 def sort(data: list):
     if len(data) > 0:
         if isinstance(data[0], dict):
-            return sorted(data, key=lambda x: list(x.items())[get_key_index(data)])
+            return sorted(data, key=lambda x: list(x.items())[get_key_index(data[0])])
         elif isinstance(data[0], list):
             return sorted([sort(data) for data in data], key=lambda x: str(x))
         else:
-            return sorted(data, key=lambda x: x)
+            return sorted(data, key=lambda x: str(x))
     else:
         return data
 
