@@ -522,8 +522,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
                     elif isinstance(v, list):  # v为列表时进入此逻辑
                         if not isinstance(aimDict[k], list):
                             raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict[k])))
-                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
-                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
+                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or (isinstance(x, list) and isinstance(x[0], dict)) else x)  # 对列表进行排序，忽略顺序
+                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or (isinstance(x, list) and isinstance(x[0], dict)) else x)  # 对列表进行排序，忽略顺序
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
                             raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
                         for ev, av in zip(expected_sorted, actual_sorted):
