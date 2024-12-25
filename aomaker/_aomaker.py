@@ -501,6 +501,8 @@ def sort(data: list):
             return sorted([sort(data) for data in data], key=lambda x: str(x))
         else:
             return sorted(data, key=lambda x: x)
+    else:
+        return data
 
 def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Optional[dict]:
     """
