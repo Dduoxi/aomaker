@@ -426,13 +426,13 @@ def kwargs_handle(cls):
     return cls
 
 
-# def get_key_index(data):
-#     data = list(data.items())
-#     for i in range(len(data)):
-#         kv_set = data[i]
-#         if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
-#             return i
-#     return 0
+def get_key_index(data):
+    data = list(data.items())
+    for i in range(len(data)):
+        kv_set = data[i]
+        if not isinstance(kv_set[1], NoneType) and not isinstance(kv_set[1], list) and not isinstance(kv_set[1], dict):
+            return i
+    return 0
 #
 # def compare_two_dict(expectedDict: dict, aimDict: dict) -> Optional[dict]:
 #     """
@@ -493,6 +493,15 @@ def kwargs_handle(cls):
 #         print(assert_exception_detail)
 #     return assert_exception_detail if len(assert_exception_detail) > 0 else None  # 若有异常则返回异常详情，否则返回空
 
+def sort(data: list):
+    if len(data) > 0:
+        if isinstance(data[0], dict):
+            return sorted(data, key=lambda x: list(x.items())[get_key_index(data)])
+        elif isinstance(data[0], list):
+            return sorted([sort(data) for data in data], key=lambda x: str(x))
+        else:
+            return sorted(data, key=lambda x: x)
+
 def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Optional[dict]:
     """
     朴实无华的匹配算法
@@ -522,8 +531,10 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
                     elif isinstance(v, list):  # v为列表时进入此逻辑
                         if not isinstance(aimDict[k], list):
                             raise CompareException(f'【{k}】值类型有误', str(type(v)), str(type(aimDict[k])))
-                        expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
-                        actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
+                        # expected_sorted = sorted(v, key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
+                        # actual_sorted = sorted(aimDict[k], key=lambda x: str(x) if isinstance(x, dict) or isinstance(x, list) else x)  # 对列表进行排序，忽略顺序
+                        expected_sorted = sort(v)  # 对列表进行排序，忽略顺序
+                        actual_sorted = sort(aimDict[k])  # 对列表进行排序，忽略顺序
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
                             raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
                         for ev, av in zip(expected_sorted, actual_sorted):
