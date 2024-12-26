@@ -49,7 +49,7 @@ setup(
     ],
 
     # 包的Python版本兼容性
-    python_requires='>=3.8',
+    python_requires='>=3.10',
 
     # 包含的包和模块
     packages=find_packages(exclude=("aomaker", "aomaker.*")),
