@@ -54,6 +54,10 @@ setup(
     # 包含的包和模块
     packages=find_packages(),
 
+    package_data={
+        '': ['html/*'],  # 确保包含 html 文件夹
+    },
+
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
 
