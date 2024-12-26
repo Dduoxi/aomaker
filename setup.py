@@ -10,10 +10,6 @@ setup(
     # 包的作者
     author='Dduoxi',
 
-    package_data={
-        '': ['aomaker/*'],  # 包含所有文件
-    },
-
     # 包的作者邮箱
     author_email='your_email@example.com',  # 请替换为您的邮箱地址
 
