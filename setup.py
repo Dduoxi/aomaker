@@ -52,7 +52,7 @@ setup(
     python_requires='>=3.10',
 
     # 包含的包和模块
-    packages=find_packages(exclude=("tests", "tests.*")),
+    packages=find_packages(exclude=("aomaker", "aomaker.*")),
 
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
@@ -60,7 +60,7 @@ setup(
     # 包的入口点
     entry_points={
         'console_scripts': [
-            'aomaker=aomaker.cli:main',  # 假设您的CLI入口在 aomaker/cli.py 的 main 函数
+            'aomaker=aomaker.cli:main_run',  # 假设您的CLI入口在 aomaker/cli.py 的 main 函数
         ],
     },
 
