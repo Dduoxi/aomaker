@@ -5,10 +5,14 @@ setup(
     name='aomaker',
 
     # 包的版本
-    version='2.4.15',  # 请根据实际情况调整版本号
+    version='2.4.16',  # 请根据实际情况调整版本号
 
     # 包的作者
     author='Dduoxi',
+
+    package_data={
+        '': ['aomaker/*'],  # 包含所有文件
+    },
 
     # 包的作者邮箱
     author_email='your_email@example.com',  # 请替换为您的邮箱地址
