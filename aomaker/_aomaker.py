@@ -496,7 +496,7 @@ def kwargs_handle(cls):
 def sort(data: list):
     if len(data) > 0:
         if isinstance(data[0], dict):
-            return sorted(data, key=lambda x: str(x))
+            return sorted(data, key=lambda x: ':'.join(f"{k}:{v}" for k, v in sorted(x.items())))  # 用list里的dict按键排序然后使用整个dict的键值对组成一个唯一key
         elif isinstance(data[0], list):
             return sorted([sort(data) for data in data], key=lambda x: str(x))
         else:
