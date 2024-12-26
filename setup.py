@@ -52,7 +52,7 @@ setup(
     python_requires='>=3.10',
 
     # 包含的包和模块
-    packages=find_packages(exclude=("aomaker", "aomaker.*")),
+    packages=find_packages(),
 
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
