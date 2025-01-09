@@ -5,7 +5,7 @@ setup(
     name='aomaker',
 
     # 包的版本
-    version='1.0.4',  # 请根据实际情况调整版本号
+    version='1.0.5',  # 请根据实际情况调整版本号
 
     # 包的作
     author='Dduoxi',
