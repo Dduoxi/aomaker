@@ -23,11 +23,11 @@ setuptools.setup(
         'black==23.10.0',
         'Jinja2==3.1.2',
         'jsonpath==0.82.2',
-        'loguru==0.6.0',
+        'loguru==0.7.2',
         'PyMySQL',
-        'pytest==7.2.0',
+        'pytest==7.4.2',
         'PyYAML==6.0',
-        'requests==2.28.1',
+        'requests==2.31.0',
         'allure-pytest==2.8.24',
         'pydantic==2.10.2',
         'mitmproxy==9.0.1',
@@ -39,7 +39,7 @@ setuptools.setup(
         'click-help-colors==0.9.1',
         'tenacity==8.2.3',
         'ruamel.yaml==0.17.21',
-        'tabulate==0.9.0',
+        # 'tabulate==0.9.0',
         'Faker~=33.0.0'
         # 'fastapi==0.110.0',
         # 'uvicorn==0.28.0'
