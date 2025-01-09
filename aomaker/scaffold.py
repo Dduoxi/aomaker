@@ -141,7 +141,7 @@ release:
     """
     create_file(os.path.join(project_name, "conf", "utils.yaml"), utils_config_content)
     conftest_content = """"""
-    create_file(os.path.join(project_name, "conftest.py"), conftest_content)
+    create_file(os.path.join(testcase_path, "conftest.py"), conftest_content)
     run_content = """\"""测试任务运行说明
 
 ================================单进程启动================================
