@@ -5,7 +5,7 @@ setuptools.setup(
     name='aomaker',
 
     # 包的版本
-    version='1.0.4',  # 请根据实际情况调整版本号
+    version='1.0.',  # 请根据实际情况调整版本号
 
     # 包的作
     author='Dduoxi',
@@ -53,6 +53,7 @@ setuptools.setup(
 
     # 包含的包和模块
     packages=setuptools.find_packages(),
+
 
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
