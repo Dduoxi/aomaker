@@ -129,9 +129,12 @@ def be_dependence(var_name: Text, condition: Union[Dict, bool], jsonpath_expr: s
                     "ao": eval(f'args[0].{api_name}.__self__.__name__')  # 类方法首个位置参数始终为类实例
                 }
                 if jsonpath_expr:
-                    cache.update(var_name, get_value_by_jsonpath(jsonpath_expr, resp)) if cache.get(var_name) else cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, resp), api_info=api_info)
+                    cache.update(var_name, get_value_by_jsonpath(jsonpath_expr, resp)) if cache.get(
+                        var_name) else cache.set(var_name, get_value_by_jsonpath(jsonpath_expr, resp),
+                                                 api_info=api_info)
                 else:
-                    cache.update(var_name, resp) if cache.get(var_name) else cache.set(var_name, resp, api_info=api_info)
+                    cache.update(var_name, resp) if cache.get(var_name) else cache.set(var_name, resp,
+                                                                                       api_info=api_info)
                 logger.info(f"==========<{api_name}>存储全局变量{var_name}完成==========")
             else:
                 logger.info(
@@ -496,13 +499,15 @@ def kwargs_handle(cls):
 def sort(data: list):
     if len(data) > 0:
         if isinstance(data[0], dict):
-            return sorted(data, key=lambda x: ':'.join(f"{k}:{v}" for k, v in sorted(x.items())))  # 用list里的dict按键排序然后使用整个dict的键值对组成一个唯一key
+            return sorted(data, key=lambda x: ':'.join(
+                f"{k}:{v}" for k, v in sorted(x.items())))  # 用list里的dict按键排序然后使用整个dict的键值对组成一个唯一key
         elif isinstance(data[0], list):
             return sorted([sort(data) for data in data], key=lambda x: str(x))
         else:
             return sorted(data, key=lambda x: str(x))
     else:
         return data
+
 
 def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Optional[dict]:
     """
@@ -517,7 +522,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
     assert_exception_detail = dict()
     # 检查数据类型是否相同
     if type(aimDict) != type(expectedDict):
-        raise CompareException(f"传入类型与预期不符，预期为:【{type(expectedDict).__name__}】, 实际为:【{type(aimDict).__name__}】")
+        raise CompareException(
+            f"传入类型与预期不符，预期为:【{type(expectedDict).__name__}】, 实际为:【{type(aimDict).__name__}】")
     try:
         if isinstance(expectedDict, dict):
             for k, v in expectedDict.items():  # 比较字典
@@ -538,7 +544,8 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
                         expected_sorted = sort(v)  # 对列表进行排序，忽略顺序
                         actual_sorted = sort(aimDict[k])  # 对列表进行排序，忽略顺序
                         if len(expected_sorted) != len(actual_sorted):  # 对比长度
-                            raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)), str(len(actual_sorted)))
+                            raise CompareException(f'【{k}】值数组长度有误', str(len(expected_sorted)),
+                                                   str(len(actual_sorted)))
                         for ev, av in zip(expected_sorted, actual_sorted):
                             if isinstance(ev, dict):
                                 tmp = compare_two_dict(ev, av, skip_key)
@@ -564,4 +571,3 @@ def compare_two_dict(expectedDict: dict, aimDict: dict, skip_key=None) -> Option
 if __name__ == '__main__':
     x = data_maker('aomaker/data/api_data/job.yaml', 'job', 'submit_job')
     print(x)
-

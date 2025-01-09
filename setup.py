@@ -1,13 +1,13 @@
-from setuptools import setup, find_packages
+import setuptools
 
-setup(
+setuptools.setup(
     # 包的名称
     name='aomaker',
 
     # 包的版本
-    version='1.0.2',  # 请根据实际情况调整版本号
+    version='1.0.',  # 请根据实际情况调整版本号
 
-    # 包的作者
+    # 包的作
     author='Dduoxi',
 
     # 包的作者邮箱
@@ -52,11 +52,8 @@ setup(
     python_requires='>=3.10',
 
     # 包含的包和模块
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
 
-    package_data={
-        '': ['html/*'],  # 确保包含 html 文件夹
-    },
 
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
@@ -64,8 +61,11 @@ setup(
     # 包的入口点
     entry_points={
         'console_scripts': [
-            'aomaker=aomaker.cli:main_run',  # 假设您的CLI入口在 aomaker/cli.py 的 main 函数
-        ],
+            'amake=aomaker.cli:main_make_alias',
+            'arun=aomaker.cli:main_arun_alias',
+            'arec=aomaker.cli:main_record_alias',
+            'aomaker=aomaker.cli:main',
+        ]
     },
 
     # 包的许可证
