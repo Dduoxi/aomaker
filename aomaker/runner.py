@@ -1,6 +1,7 @@
 # --coding:utf-8--
 import os
 import shutil
+from contextlib import suppress
 from multiprocessing import Pool
 from functools import singledispatchmethod
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
@@ -257,6 +258,8 @@ class CustomTeardownPlugin:
     def pytest_runtest_teardown(self, item: Item, nextitem: Optional[Item]) -> None:
         _update_current_test_var(item, "teardown")
         item.session._setupstate.teardown_exact(nextitem)
+        with suppress(KeyError):
+            _update_current_test_var(item, None)
 
 
 def main_task(args: list):
