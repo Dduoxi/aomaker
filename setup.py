@@ -22,7 +22,7 @@ setuptools.setup(
     install_requires=[
         'black==23.10.0',
         'Jinja2==3.1.2',
-        'jsonpath==0.82',
+        'jsonpath==0.82.2',
         'loguru==0.6.0',
         'PyMySQL',
         'pytest==7.2.0',
