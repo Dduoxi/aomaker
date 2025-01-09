@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 setuptools.setup(
     name="aomaker",
-    version="1.0.4",
+    version="1.0.5",
     author="fengjiTest",
     author_email="w021221@yeah.net",
     description="An api testing framework",
