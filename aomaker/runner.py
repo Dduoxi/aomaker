@@ -4,8 +4,11 @@ import shutil
 from multiprocessing import Pool
 from functools import singledispatchmethod
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
+from typing import Optional
 
 import pytest
+from _pytest.nodes import Item
+from _pytest.runner import _update_current_test_var
 
 from aomaker._printer import printer
 from aomaker.cache import config
@@ -249,13 +252,21 @@ class ThreadsRunner(Runner):
             gen_reports()
 
 
+class CustomTeardownPlugin:
+    @pytest.hookimpl
+    def pytest_runtest_teardown(self, item: Item, nextitem: Optional[Item]) -> None:
+        _update_current_test_var(item, "teardown")
+        item.session._setupstate.teardown_exact(nextitem)
+
+
 def main_task(args: list):
     """pytest启动"""
     pytest_opts = _get_pytest_ini()
     logger.info(f"<AoMaker> pytest的执行参数：{args}")
     if pytest_opts:
         logger.info(f"<AoMaker> pytest.ini配置参数：{pytest_opts}")
-    pytest.main(args)
+    plugin = CustomTeardownPlugin()
+    pytest.main(args, plugins=[plugin])
 
 
 def make_args_group(args: list, extra_args: list):
