@@ -1,6 +1,6 @@
-import setuptools
+from setuptools import setup, find_packages
 
-setuptools.setup(
+setup(
     # 包的名称
     name='aomaker',
 
@@ -52,7 +52,7 @@ setuptools.setup(
     python_requires='>=3.10',
 
     # 包含的包和模块
-    packages=setuptools.find_packages(),
+    packages=find_packages(exclude=("aomaker", "aomaker.*")),
 
     # 包含的额外文件（例如：README、LICENSE等）
     include_package_data=True,
@@ -66,11 +66,6 @@ setuptools.setup(
             'aomaker=aomaker.cli:main',
         ]
     },
-
-    # 包的许可证
-    license='MIT',
-
-    # 包的分类
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -81,7 +76,5 @@ setuptools.setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ],
-
-    # 其他元数据
     keywords='api automation pytest',
 )
