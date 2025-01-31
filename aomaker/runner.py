@@ -189,7 +189,8 @@ class ProcessesRunner(Runner):
         max_process = self.max_process_count
         return min(process_count, max_process)
 
-    def _execute_tasks(self, process_count, task_args, extra_args):
+    @staticmethod
+    def _execute_tasks(process_count, task_args, extra_args):
         with Pool(process_count) as pool:
             logger.info(f"<AoMaker> 多进程任务启动，进程数：{process_count}")
             pool.map(main_task, make_args_group(task_args, extra_args))
@@ -279,8 +280,7 @@ def make_args_group(args: list, extra_args: list):
     """
     pytest_args_group = []
     for arg in args:
-        pytest_args = []
-        pytest_args.append(arg)
+        pytest_args = [arg]
         pytest_args.extend(extra_args)
         pytest_args_group.append(pytest_args)
         yield pytest_args_group[-1]
